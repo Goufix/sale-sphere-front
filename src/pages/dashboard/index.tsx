@@ -25,19 +25,19 @@ interface Sell {
   paid: boolean;
 }
 
-const apiClients = new Array(100).fill(null).map<Client>(() => ({
+const apiClients = new Array(5).fill(null).map<Client>(() => ({
   name: fakerPT_BR.person.fullName(),
   phoneNumber: fakerPT_BR.phone.number().replace("+55 ", ""),
   code: fakerPT_BR.number.int({ max: 9999, min: 1000 }).toString(),
 }));
 
-const apiProducts = new Array(10).fill(null).map<Product>(() => ({
+const apiProducts = new Array(5).fill(null).map<Product>(() => ({
   name: fakerPT_BR.commerce.product(),
   value: fakerPT_BR.number.int({ max: 100, min: 5 }),
   stock: fakerPT_BR.number.int({ max: 10000, min: 1000 }),
 }));
 
-const apiSells = new Array(10).fill(null).map<Sell>((_, i) => {
+const apiSells = new Array(3).fill(null).map<Sell>((_, i) => {
   const amount = fakerPT_BR.number.int({ max: 100, min: 10 });
   const product = apiProducts[i];
   const client = apiClients[i];
