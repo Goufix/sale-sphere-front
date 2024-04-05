@@ -1,5 +1,7 @@
 import { fakerPT_BR } from "@faker-js/faker";
+import { useState } from "react";
 import { Card } from "../../components/card/card";
+import { SFModal } from "../../components/modal";
 import { Table } from "../../components/table/table";
 import * as S from "./styles";
 
@@ -71,10 +73,19 @@ const sells = apiSells.map(({ amount, client, paid, product, totalValue }) => ({
 }));
 
 export function Dashboard() {
+  const [isOpened, setOpened] = useState<boolean>(false);
+
   return (
     <S.Container>
       <S.CardContainer>
-        <Card buttonText="Adicionar" content={<Table data={clients} />} title="Clientes" />
+        {isOpened && <SFModal setOpened={setOpened} />}
+        <Card
+          open={isOpened}
+          setOpen={setOpened}
+          buttonText="Adicionar"
+          content={<Table data={clients} />}
+          title="Clientes"
+        />
         <Card buttonText="Adicionar" content={<Table data={products} />} title="Produtos" />
         <Card buttonText="Adicionar" content={<Table data={sells} />} title="Vendas" />
       </S.CardContainer>
