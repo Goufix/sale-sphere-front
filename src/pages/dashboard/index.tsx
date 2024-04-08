@@ -13,7 +13,7 @@ export function Dashboard() {
   const [apiProducts, setApiProducts] = useState<any[]>([]);
   const [apiSales, setApiSales] = useState<any[]>([]);
 
-  const { error, loading, setError, setLoading } = useContext(ApiContext);
+  const { setError, setLoading } = useContext(ApiContext);
   const clientsApi = new ClientsApi(setError, setLoading);
   const productsApi = new ProductsApi(setError, setLoading);
   const salesApi = new SalesApi(setError, setLoading);
