@@ -12,6 +12,8 @@ function extractColumnsAndData(data: Record<string, any>[]): { columns: string[]
     const row: any[] = [];
 
     Object.keys(item).forEach((key) => {
+      if (key === "id") return;
+
       columnsSet.add(key);
 
       row.push(item[key]);

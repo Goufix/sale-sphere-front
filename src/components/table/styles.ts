@@ -29,7 +29,9 @@ export const TableRow = styled.tr`
 `;
 
 export const TableCell = styled.td<{ value: string }>`
-  ${(props) => (props.value === "Sim" ? "color: green;" : props.value === "Não" ? "color: red;" : "color: inherit;")}
+  ${(props) =>
+    props.value === "Sim" ? "color: #3b8640;" : props.value === "Não" ? "color: #5e1818;" : "color: inherit;"}
+  font-weight: bold;
   text-align: center;
   padding: 8px;
 `;
