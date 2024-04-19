@@ -52,7 +52,12 @@ export function Table({ data }: Props) {
                 if (cell === "Editar" || cell === "Apagar")
                   return (
                     <S.TableCell value={cell} key={cellIndex}>
-                      <Btn variant={cell === "Editar" ? "#5e5518" : "#5e1818"}>{cell}</Btn>
+                      <Btn
+                        variant={cell === "Editar" ? "#5e5518" : "#5e1818"}
+                        onClick={() => (cell === "Editar" ? cell.handleEdit(cell.id) : cell.handleEdit(cell.id))}
+                      >
+                        {cell}
+                      </Btn>
                     </S.TableCell>
                   );
 
