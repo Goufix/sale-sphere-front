@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { ApiContext } from "../../api/apiContext";
 import { ClientsApi } from "../../api/clients";
 import { Clients } from "../../api/entities/client.entity";
@@ -14,11 +14,11 @@ export function Dashboard() {
   const [apiSales, setApiSales] = useState<any[]>([]);
 
   const { setError, setLoading } = useContext(ApiContext);
-  const clientsApi = new ClientsApi(setError, setLoading);
-  const productsApi = new ProductsApi(setError, setLoading);
-  const salesApi = new SalesApi(setError, setLoading);
+  const clientsApi = useMemo(() => new ClientsApi(setError, setLoading), [setError, setLoading]);
+  const productsApi = useMemo(() => new ProductsApi(setError, setLoading), [setError, setLoading]);
+  const salesApi = useMemo(() => new SalesApi(setError, setLoading), [setError, setLoading]);
 
-  const fetchApi = async () => {
+  const fetchApi = useCallback(async () => {
     const clients = await clientsApi.get();
     setApiClients(
       clients?.map(({ code, name, phoneNumber, id }) => ({
@@ -26,6 +26,7 @@ export function Dashboard() {
         código: code,
         nome: name,
         telefone: phoneNumber,
+        handleDelete: (id: string) => clientsApi.delete(id),
       })) ?? []
     );
 
@@ -36,11 +37,12 @@ export function Dashboard() {
         nome: name,
         estoque: stock,
         Preço: value,
+        handleEdit: (id: string, stock: number) => productsApi.update(id, stock),
+        handleDelete: (id: string) => productsApi.delete(id),
       })) ?? []
     );
 
     const sales = await salesApi.get();
-    console.log("sales", sales);
     setApiSales(
       sales?.map(({ amount, client, paid, product, totalValue, id }) => ({
         id,
@@ -49,13 +51,14 @@ export function Dashboard() {
         quantidade: amount,
         "valor total": totalValue,
         pago: paid ? "Sim" : "Não",
+        handleEdit: (id: string) => salesApi.markAsPaid(id),
       })) ?? []
     );
-  };
+  }, [clientsApi, productsApi, salesApi]);
 
   useEffect(() => {
     fetchApi();
-  }, []);
+  }, [fetchApi]);
 
   const handleClientsSubmit = async (data: Clients) => {
     await clientsApi.create(data);

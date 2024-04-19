@@ -1,3 +1,4 @@
+import { Btn } from "../modal/styles";
 import * as S from "./styles";
 
 interface Props {
@@ -18,6 +19,11 @@ function extractColumnsAndData(data: Record<string, any>[]): { columns: string[]
 
       row.push(item[key]);
     });
+    columnsSet.add("Editar");
+    columnsSet.add("Apagar");
+
+    row.push("Editar", "Apagar");
+
     _data.push(row);
   });
 
@@ -42,11 +48,20 @@ export function Table({ data }: Props) {
         <tbody>
           {_data.map((row, rowIndex) => (
             <S.TableRow key={rowIndex}>
-              {row.map((cell, cellIndex) => (
-                <S.TableCell value={cell} key={cellIndex}>
-                  {cell}
-                </S.TableCell>
-              ))}
+              {row.map((cell, cellIndex) => {
+                if (cell === "Editar" || cell === "Apagar")
+                  return (
+                    <S.TableCell value={cell} key={cellIndex}>
+                      <Btn variant={cell === "Editar" ? "#5e5518" : "#5e1818"}>{cell}</Btn>
+                    </S.TableCell>
+                  );
+
+                return (
+                  <S.TableCell value={cell} key={cellIndex}>
+                    {cell}
+                  </S.TableCell>
+                );
+              })}
             </S.TableRow>
           ))}
         </tbody>
