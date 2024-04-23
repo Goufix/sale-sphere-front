@@ -37,8 +37,8 @@ export function Dashboard() {
         nome: name,
         estoque: stock,
         Preço: value,
-        handleEdit: (id: string, stock: number) => productsApi.update(id, stock),
-        handleDelete: (id: string) => productsApi.delete(id),
+        handleEdit: ({ stock }: any) => productsApi.update(id, stock),
+        handleDelete: () => productsApi.delete(id),
       })) ?? []
     );
 
@@ -51,7 +51,7 @@ export function Dashboard() {
         quantidade: amount,
         "valor total": totalValue,
         pago: paid ? "Sim" : "Não",
-        handleEdit: (id: string) => salesApi.markAsPaid(id),
+        handleEdit: () => salesApi.markAsPaid(id),
       })) ?? []
     );
   }, [clientsApi, productsApi, salesApi]);
@@ -145,6 +145,8 @@ export function Dashboard() {
               type: "checkbox",
             },
           ]}
+          // Precisa implementar aqui a lógica de editar, colocar os campos necessários aqui numa prop nova
+          //  que vai servir pro modal abrir com esses campos
           onSubmit={handleSaleSubmit}
           buttonText="Adicionar"
           content={<Table data={apiSales} />}

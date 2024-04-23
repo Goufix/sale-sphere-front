@@ -54,7 +54,7 @@ export function Table({ data }: Props) {
                     <S.TableCell value={cell} key={cellIndex}>
                       <Btn
                         variant={cell === "Editar" ? "#5e5518" : "#5e1818"}
-                        onClick={() => (cell === "Editar" ? cell.handleEdit(cell.id) : cell.handleEdit(cell.id))}
+                        onClick={() => (cell === "Editar" ? cell.handleEdit() : cell.handleDelete())}
                       >
                         {cell}
                       </Btn>
