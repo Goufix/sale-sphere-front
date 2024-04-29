@@ -24,10 +24,15 @@ export class ProductsApi {
     }
   }
 
-  async create(product: Partial<Products>) {
+  async create(product: Partial<any>) {
     try {
       this.onLoading(true);
-      const response = await this.axiosInstance.post<Products>("/products", product);
+      const response = await this.axiosInstance.post<Products>("/products", {
+        id: product.id,
+        name: product.nome,
+        stock: product.estoque,
+        value: product.preço,
+      } as Products);
       return response.data;
     } catch (e) {
       if (isAxiosError(e)) {
@@ -54,7 +59,7 @@ export class ProductsApi {
   async update(id: string, stock: number) {
     try {
       this.onLoading(true);
-      await this.axiosInstance.post(`/products/stock/${id}`, { stock });
+      await this.axiosInstance.patch(`/products/${id}`, { stock });
     } catch (e) {
       if (isAxiosError(e)) {
         this.onError(e.response?.data.message);

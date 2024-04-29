@@ -1,7 +1,6 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { ApiContext } from "../../api/apiContext";
 import { ClientsApi } from "../../api/clients";
-import { Clients } from "../../api/entities/client.entity";
 import { ProductsApi } from "../../api/produts";
 import { SalesApi } from "../../api/sale";
 import { Card } from "../../components/card/card";
@@ -12,6 +11,16 @@ export function Dashboard() {
   const [apiClients, setApiClients] = useState<any[]>([]);
   const [apiProducts, setApiProducts] = useState<any[]>([]);
   const [apiSales, setApiSales] = useState<any[]>([]);
+  const [clientFormData] = useState<any>({});
+  const [productFormData, setProductFormData] = useState<any>({});
+  const [saleFormData, setSaleFormData] = useState<any>({});
+  const [clientModalOpen, setClientModalOpen] = useState<boolean>(false);
+  const [productModalOpen, setProductModalOpen] = useState<boolean>(false);
+  const [saleModalOpen, setSaleModalOpen] = useState<boolean>(false);
+  const [clientInputs, setClientInputs] = useState<any[]>([]);
+  const [productInputs, setProductInputs] = useState<any[]>([]);
+  const [saleInputs, setSaleInputs] = useState<any[]>([]);
+  const [isEditing, setEditing] = useState<boolean>(false);
 
   const { setError, setLoading } = useContext(ApiContext);
   const clientsApi = useMemo(() => new ClientsApi(setError, setLoading), [setError, setLoading]);
@@ -19,6 +28,7 @@ export function Dashboard() {
   const salesApi = useMemo(() => new SalesApi(setError, setLoading), [setError, setLoading]);
 
   const fetchApi = useCallback(async () => {
+    setEditing(false);
     const clients = await clientsApi.get();
     setApiClients(
       clients?.map(({ code, name, phoneNumber, id }) => ({
@@ -26,9 +36,13 @@ export function Dashboard() {
         código: code,
         nome: name,
         telefone: phoneNumber,
-        handleDelete: (id: string) => clientsApi.delete(id),
       })) ?? []
     );
+    setClientInputs([
+      { label: "Código", value: "código", type: "text" },
+      { label: "Nome", value: "nome", type: "text" },
+      { label: "Telefone", value: "telefone", type: "text" },
+    ]);
 
     const products = await productsApi.get();
     setApiProducts(
@@ -36,11 +50,26 @@ export function Dashboard() {
         id,
         nome: name,
         estoque: stock,
-        Preço: value,
-        handleEdit: ({ stock }: any) => productsApi.update(id, stock),
-        handleDelete: () => productsApi.delete(id),
+        preço: value,
       })) ?? []
     );
+    setProductInputs([
+      {
+        label: "Nome",
+        value: "nome",
+        type: "text",
+      },
+      {
+        label: "Estoque",
+        value: "estoque",
+        type: "text",
+      },
+      {
+        label: "Preço",
+        value: "preço",
+        type: "text",
+      },
+    ]);
 
     const sales = await salesApi.get();
     setApiSales(
@@ -51,27 +80,104 @@ export function Dashboard() {
         quantidade: amount,
         "valor total": totalValue,
         pago: paid ? "Sim" : "Não",
-        handleEdit: () => salesApi.markAsPaid(id),
       })) ?? []
     );
-  }, [clientsApi, productsApi, salesApi]);
+    setSaleInputs([
+      {
+        label: "Cliente",
+        value: "cliente",
+        type: "select",
+        options: apiClients.map((c) => {
+          return {
+            label: c.nome,
+            value: c.id,
+          };
+        }),
+      },
+      {
+        label: "produto",
+        value: "produto",
+        type: "select",
+        options: apiProducts.map((p) => ({
+          label: p.nome,
+          value: p.id,
+        })),
+      },
+      {
+        label: "Quantidade",
+        value: "quantidade",
+        type: "text",
+      },
+      {
+        label: "Pago",
+        value: "pago",
+        type: "checkbox",
+      },
+    ]);
+  }, []);
 
   useEffect(() => {
     fetchApi();
-  }, [fetchApi]);
+  }, []);
 
-  const handleClientsSubmit = async (data: Clients) => {
-    await clientsApi.create(data);
+  useEffect(() => {
+    if (!(clientModalOpen || productModalOpen || saleModalOpen)) {
+      setEditing(false);
+    }
+  }, [clientModalOpen, productModalOpen, saleModalOpen]);
+
+  const handleClientDelete = async (data: any) => {
+    await clientsApi.delete(data.id);
     fetchApi();
   };
 
-  const handleProductsSubmit = async (data: Clients) => {
-    await productsApi.create(data);
+  const handleProductEdit = async (data: any) => {
+    setProductFormData(data);
+    setProductInputs((curr) => curr.filter((p) => p.value === "estoque"));
+    setProductModalOpen(true);
+    setEditing(true);
+  };
+  const handleProductDelete = async (data: any) => {
+    await productsApi.delete(data.id);
     fetchApi();
   };
 
-  const handleSaleSubmit = async (data: Clients) => {
-    await salesApi.create(data);
+  const handleSaleEdit = async (data: any) => {
+    setSaleFormData(data);
+    const toRemove = ["produto", "cliente", "quantidade"];
+    setSaleInputs((curr) => curr.filter((p) => !toRemove.includes(p.value)));
+    setSaleModalOpen(true);
+    setEditing(true);
+  };
+  const handleSaleDelete = async (data: any) => {
+    await salesApi.delete(data.id);
+    fetchApi();
+  };
+
+  const handleClientsSubmit = async (data: any) => {
+    if (isEditing) {
+      setError("Você não pode editar clientes");
+    } else {
+      await clientsApi.create(data);
+    }
+    fetchApi();
+  };
+
+  const handleProductsSubmit = async (data: any) => {
+    if (isEditing) {
+      await productsApi.update(data.id, data.estoque);
+    } else {
+      await productsApi.create(data);
+    }
+    fetchApi();
+  };
+
+  const handleSaleSubmit = async (data: any) => {
+    if (isEditing) {
+      await salesApi.markAsPaid(data.id);
+    } else {
+      await salesApi.create(data);
+    }
     fetchApi();
   };
 
@@ -79,78 +185,40 @@ export function Dashboard() {
     <S.Container>
       <S.CardContainer>
         <Card
+          key="client"
           buttonText="Adicionar"
-          content={<Table data={apiClients} />}
+          content={<Table data={apiClients} handleDelete={handleClientDelete} />}
           title="Clientes"
-          inputs={[
-            { label: "Código", value: "code", type: "text" },
-            { label: "Nome", value: "name", type: "text" },
-            { label: "Telefone", value: "phoneNumber", type: "text" },
-          ]}
+          inputs={clientInputs}
           onSubmit={handleClientsSubmit}
+          formData={clientFormData}
+          open={clientModalOpen}
+          setOpen={setClientModalOpen}
+          fetchApi={fetchApi}
         />
         <Card
-          inputs={[
-            {
-              label: "Nome",
-              value: "name",
-              type: "text",
-            },
-            {
-              label: "Estoque",
-              value: "stock",
-              type: "text",
-            },
-            {
-              label: "Preço",
-              value: "value",
-              type: "text",
-            },
-          ]}
+          key="products"
+          inputs={productInputs}
           onSubmit={handleProductsSubmit}
           buttonText="Adicionar"
-          content={<Table data={apiProducts} />}
+          content={<Table data={apiProducts} handleDelete={handleProductDelete} handleEdit={handleProductEdit} />}
           title="Produtos"
+          formData={productFormData}
+          open={productModalOpen}
+          setOpen={setProductModalOpen}
+          fetchApi={fetchApi}
         />
         <Card
-          inputs={[
-            {
-              label: "Cliente",
-              value: "clientId",
-              type: "select",
-              options: apiClients.map((c) => {
-                return {
-                  label: c.nome,
-                  value: c.id,
-                };
-              }),
-            },
-            {
-              label: "produto",
-              value: "productId",
-              type: "select",
-              options: apiProducts.map((p) => ({
-                label: p.nome,
-                value: p.id,
-              })),
-            },
-            {
-              label: "Quantidade",
-              value: "amount",
-              type: "text",
-            },
-            {
-              label: "Pago",
-              value: "paid",
-              type: "checkbox",
-            },
-          ]}
-          // Precisa implementar aqui a lógica de editar, colocar os campos necessários aqui numa prop nova
-          //  que vai servir pro modal abrir com esses campos
+          key="sales"
+          inputs={saleInputs}
           onSubmit={handleSaleSubmit}
           buttonText="Adicionar"
-          content={<Table data={apiSales} />}
+          content={<Table data={apiSales} handleDelete={handleSaleDelete} handleEdit={handleSaleEdit} />}
           title="Vendas"
+          formData={saleFormData}
+          open={saleModalOpen}
+          setOpen={setSaleModalOpen}
+          fetchApi={fetchApi}
         />
       </S.CardContainer>
     </S.Container>

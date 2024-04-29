@@ -24,10 +24,16 @@ export class SalesApi {
     }
   }
 
-  async create(product: Partial<Sales>) {
+  async create(sale: Partial<any>) {
     try {
       this.onLoading(true);
-      const response = await this.axiosInstance.post<Sales>("/sales", product);
+      const response = await this.axiosInstance.post<Sales>("/sales", {
+        amount: sale.quantidade,
+        id: sale.id,
+        paid: sale.pago === "Sim",
+        productId: sale.produto,
+        clientId: sale.cliente,
+      });
       return response.data;
     } catch (e) {
       if (isAxiosError(e)) {

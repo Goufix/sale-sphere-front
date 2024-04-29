@@ -24,10 +24,15 @@ export class ClientsApi {
     }
   }
 
-  async create(client: Partial<Clients>) {
+  async create(client: Partial<any>) {
     try {
       this.onLoading(true);
-      const response = await this.axiosInstance.post<Clients>("/clients", client);
+      const response = await this.axiosInstance.post<Clients>("/clients", {
+        name: client.nome,
+        code: client.código,
+        id: client.id,
+        phoneNumber: client.telefone,
+      } as Clients);
       return response.data;
     } catch (e) {
       if (isAxiosError(e)) {
