@@ -87,9 +87,9 @@ export function Dashboard() {
         label: "Cliente",
         value: "cliente",
         type: "select",
-        options: apiClients.map((c) => {
+        options: clients?.map((c) => {
           return {
-            label: c.nome,
+            label: c.name,
             value: c.id,
           };
         }),
@@ -98,8 +98,8 @@ export function Dashboard() {
         label: "produto",
         value: "produto",
         type: "select",
-        options: apiProducts.map((p) => ({
-          label: p.nome,
+        options: products?.map((p) => ({
+          label: p.name,
           value: p.id,
         })),
       },
